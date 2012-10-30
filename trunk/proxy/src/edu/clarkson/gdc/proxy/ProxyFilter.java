@@ -16,14 +16,21 @@ public class ProxyFilter implements Filter {
 
 	Logger log = LoggerFactory.getLogger(getClass());
 
-	// TODO Choose a server container based on configuration
-	ServerContainer container = null;
+	ServerContainer container;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain filterChain) throws IOException, ServletException {
+		if (null == container) {
+			filterChain.doFilter(request, response);
+			return;
+		}
 		// Get available server from container
 		Server server = container.getServer();
+		if (null == server) {
+			filterChain.doFilter(request, response);
+			return;
+		}
 
 		RequestHandler requestHandler = server.getRequestHandler(request);
 
@@ -37,6 +44,12 @@ public class ProxyFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig config) throws ServletException {
+		// TODO Choose a server container based on configuration
+		container = ServerContainerFactory.create(config
+				.getInitParameter("CONTAINER_TYPE"));
+
+		if (null == container)
+			container = ServerContainerFactory.createDefault();
 	}
 
 	@Override
