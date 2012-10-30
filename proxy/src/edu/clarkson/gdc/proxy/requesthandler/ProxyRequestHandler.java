@@ -71,7 +71,7 @@ public class ProxyRequestHandler implements RequestHandler {
 			HttpServletRequest httpServletRequest) {
 		HttpUriRequest httpRequest = null;
 
-		String url = MessageFormat.format("{0}://{1}/{2}",
+		String url = MessageFormat.format("{0}://{1}{2}",
 				httpServletRequest.getScheme(), server.getAddress(),
 				httpServletRequest.getContextPath());
 
@@ -90,7 +90,11 @@ public class ProxyRequestHandler implements RequestHandler {
 		while (headerNames.hasMoreElements()) {
 			String headerName = (String) headerNames.nextElement();
 			String headerValue = httpServletRequest.getHeader(headerName);
-			httpRequest.setHeader(headerName, headerValue);
+			// Specially dealing with host
+			if ("host".equals(headerName)) {
+				httpRequest.setHeader("host", server.getAddress());
+			} else
+				httpRequest.setHeader(headerName, headerValue);
 		}
 
 		// Copy Parameters
@@ -117,12 +121,16 @@ public class ProxyRequestHandler implements RequestHandler {
 
 		// TODO Copy params
 
-		response.setContentLength((int) httpResponse.getEntity()
-				.getContentLength());
-		response.setContentType(httpResponse.getEntity().getContentType()
-				.getValue());
-		response.setCharacterEncoding(httpResponse.getEntity()
-				.getContentEncoding().getValue());
+		if (null != httpResponse.getEntity()) {
+			response.setContentLength((int) httpResponse.getEntity()
+					.getContentLength());
+			if (null != httpResponse.getEntity().getContentType())
+				response.setContentType(httpResponse.getEntity()
+						.getContentType().getValue());
+			if (null != httpResponse.getEntity().getContentEncoding())
+				response.setCharacterEncoding(httpResponse.getEntity()
+						.getContentEncoding().getValue());
+		}
 		// Copy Stream content
 		try {
 			IOUtils.copy(httpResponse.getEntity().getContent(),
