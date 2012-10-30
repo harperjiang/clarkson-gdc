@@ -34,7 +34,7 @@ public class GDCServerContainer implements ServerContainer {
 			for (String serverId : serverList) {
 				DefaultServer server = new DefaultServer();
 				server.setId(serverId);
-				server.setAddress(prop.get(server + ".address").toString());
+				server.setAddress(prop.get(serverId + ".address").toString());
 
 				servers.put(serverId, server);
 				availableServers.put(serverId, server);
