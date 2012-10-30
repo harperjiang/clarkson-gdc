@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -28,6 +29,8 @@ import edu.clarkson.gdc.proxy.Server;
 public class ProxyRequestHandler implements RequestHandler {
 
 	private Server server;
+
+	private transient HttpServletRequest httpServletRequest;
 
 	public ProxyRequestHandler(Server server) {
 		this.server = server;
@@ -47,7 +50,7 @@ public class ProxyRequestHandler implements RequestHandler {
 			throw new IllegalArgumentException(
 					"Cannot handle non-Http requests");
 		}
-		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+		httpServletRequest = (HttpServletRequest) request;
 		HttpUriRequest httpRequest = createHttpRequest(server,
 				httpServletRequest);
 
@@ -116,6 +119,13 @@ public class ProxyRequestHandler implements RequestHandler {
 		for (Header header : httpResponse.getAllHeaders()) {
 			response.setHeader(header.getName(), header.getValue());
 		}
+
+		// Add Via header
+		String viaHeader = MessageFormat.format("{0} {1}:{2}",
+				HttpVersion.HTTP_1_1, httpServletRequest.getLocalAddr(),
+				String.valueOf(httpServletRequest.getLocalPort()));
+		response.setHeader("Via", viaHeader);
+
 		// Copy Status
 		response.setStatus(httpResponse.getStatusLine().getStatusCode());
 
