@@ -1,4 +1,4 @@
-package org.harper.gateway;
+package edu.clarkson.gdc.proxy;
 
 public interface ServerContainer {
 
