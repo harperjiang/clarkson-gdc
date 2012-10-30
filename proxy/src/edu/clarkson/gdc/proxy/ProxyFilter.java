@@ -27,12 +27,16 @@ public class ProxyFilter implements Filter {
 
 		RequestHandler requestHandler = server.getRequestHandler(request);
 
-		requestHandler.handleRequest(request, response);
-
+		try {
+			requestHandler.handleRequest(request, response);
+		} catch (Exception e) {
+			LoggerFactory.getLogger(getClass()).error(
+					"Error occurred while processing request", e);
+		}
 	}
 
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
+	public void init(FilterConfig config) throws ServletException {
 	}
 
 	@Override
